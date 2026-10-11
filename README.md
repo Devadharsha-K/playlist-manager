@@ -32,7 +32,8 @@ npm start
 1. Push this folder to a public GitHub repo.
 2. On render.com: New > Web Service > connect the repo.
 3. Build command `npm install`, start command `npm start`, then Deploy.
-4. Paste the Render URL here: **Live demo: _your-link_**
+4. Paste the Render URL here: **Live demo:https://playlist-manager-wsr5.onrender.com**
+**GitHub:** https://github.com/Devadharsha-K/playlist-manager
 
 Note: data is held in memory, so it resets when the free server restarts.
 
