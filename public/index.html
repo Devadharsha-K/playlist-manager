@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linked Playlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--panel:#121212;--card:#181818;--hover:#2a2a2a;--text:#fff;--mute:#b3b3b3;--green:#1ed760;--warn:#f3727f;
+ font-family:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);display:grid;grid-template-columns:300px 1fr;grid-template-rows:1fr 90px;gap:8px;padding:8px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,.row:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+aside,main{background:var(--panel);border-radius:8px;overflow:auto}
+aside{padding:20px 16px}
+aside h2{font-size:1rem;margin:0 0 14px}
+aside form{display:grid;gap:10px}
+input,select{font:inherit;background:var(--hover);color:var(--text);border:1px solid transparent;border-radius:6px;padding:10px 12px;width:100%}
+input:focus,select:focus{border-color:#fff}
+.pill{background:var(--green);color:#000;font-weight:700;border-radius:500px;padding:11px 20px}
+.pill:hover{transform:scale(1.03);background:#3be477}
+.log{margin-top:22px;background:var(--card);border-radius:8px;padding:14px;color:var(--mute);font-size:.88rem;line-height:1.5}
+.log b{color:var(--text)}.log.err{color:var(--warn)}
+main{background:linear-gradient(180deg,#1f5f3a 0,var(--panel) 340px)}
+.hero{display:flex;gap:22px;align-items:flex-end;padding:32px 28px 20px}
+.cover{width:192px;height:192px;border-radius:4px;background:url('cover.jpg') center/cover,linear-gradient(135deg,#450af5,#c4efd9);box-shadow:0 4px 60px rgba(0,0,0,.5);flex:none}
+.hero small{font-weight:700}
+.hero h1{font-size:clamp(2rem,6vw,4.5rem);font-weight:900;margin:6px 0 10px;letter-spacing:-.04em;line-height:1}
+.hero p{margin:0;color:var(--mute)}
+.bar{display:flex;align-items:center;gap:22px;padding:6px 28px 18px}
+.big{width:56px;height:56px;border-radius:50%;background:var(--green);color:#000;font-size:1.4rem;display:grid;place-items:center}
+.big:hover{transform:scale(1.06);background:#3be477}
+.tool{color:var(--mute);font-weight:500}.tool:hover{color:#fff}.tool.on{color:var(--green)}
+.list{padding:0 14px}
+.head,.row{display:grid;grid-template-columns:40px 1fr 1fr 70px 40px;gap:12px;align-items:center;padding:8px 14px}
+.head{color:var(--mute);font-size:.8rem;border-bottom:1px solid #2a2a2a;margin-bottom:8px}
+.row{border-radius:4px;cursor:pointer;color:var(--mute)}
+.row:hover{background:rgba(255,255,255,.1)}
+.row .t{color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.cur .t,.row.cur .n{color:var(--green)}
+.row .x{opacity:0;color:var(--mute)}.row:hover .x,.row .x:focus-visible{opacity:1}
+.row .x:hover{color:var(--warn)}
+.tagc{font-size:.72rem;color:#000;background:var(--green);border-radius:4px;padding:1px 6px;margin-left:6px}
+.tagc.tl{background:#f3727f}
+.empty{color:var(--mute);padding:40px 14px;text-align:center}
+.under{margin:28px 28px 40px}
+.under h3{margin:0 0 4px}.under p{margin:0 0 14px;color:var(--mute);font-size:.9rem}
+.rail{display:flex;align-items:center;overflow-x:auto;padding:10px 2px 14px}
+.cell{display:flex;align-items:center;flex:none}
+.node{width:150px;background:var(--card);border-radius:8px;padding:10px 12px;border:2px solid transparent}
+.node.cur{border-color:var(--green)}
+.node b,.node small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node small{color:var(--mute)}
+.node em{font-style:normal;font-size:.7rem;color:var(--green)}
+.arrow{width:44px;text-align:center;color:var(--mute);font-size:.85rem;line-height:1.05}
+.arrow i{display:block;font-style:normal}
+.nul{color:var(--mute);font-size:.8rem;padding:0 6px}
+footer{grid-column:1/-1;background:var(--bg);display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;padding:0 10px;gap:12px}
+.np{display:flex;gap:12px;align-items:center;min-width:0}
+.np .mini{width:56px;height:56px;border-radius:4px;background:url('cover.jpg') center/cover,linear-gradient(135deg,#450af5,#c4efd9);flex:none}
+.np b,.np span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np span{color:var(--mute);font-size:.82rem}
+.ctr{display:grid;gap:8px;justify-items:center}
+.btns{display:flex;gap:20px;align-items:center}
+.circ{width:34px;height:34px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center}
+.circ:hover{transform:scale(1.06)}
+.prog{display:flex;gap:8px;align-items:center;width:100%;max-width:520px;color:var(--mute);font-size:.72rem}
+.track{flex:1;height:4px;background:#4d4d4d;border-radius:2px}
+.track div{height:100%;width:0;background:#fff;border-radius:2px}
+.track:hover div{background:var(--green)}
+.rt{text-align:right;color:var(--mute);font-size:.82rem}
+.res{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;padding:8px 0}
+.res img{width:48px;height:48px;border-radius:4px;background:var(--hover)}
+.res b,.res span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.88rem}
+.res span{color:var(--mute);font-size:.8rem}
+.res button{border:1px solid #727272;border-radius:500px;padding:5px 14px;font-weight:700;font-size:.82rem}
+.res button:hover{border-color:#fff;transform:scale(1.04)}
+#res .empty{padding:14px 0}
+.art{width:36px;height:36px;border-radius:4px;vertical-align:middle;margin-right:12px;object-fit:cover}
+.why{margin:0 28px 48px;background:var(--card);border-radius:12px;padding:24px}
+.why h3{margin:0 0 8px;font-size:1.3rem}
+.why>p{color:var(--mute);line-height:1.6;margin:0 0 18px}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px}
+.why-grid div{background:var(--hover);border-radius:8px;padding:14px;font-size:.88rem;line-height:1.5;color:var(--mute)}
+.why-grid b{display:block;color:#fff;margin-bottom:4px}
+.why-grid code,.why pre{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--green)}
+.why-grid em{font-style:normal;color:#fff;font-weight:700}
+.why pre{background:#0c0c0c;border-radius:8px;padding:14px;overflow-x:auto;font-size:.82rem;line-height:1.55;margin:0 0 14px}
+.why .try{color:#fff;font-size:.9rem;margin:0}
+@media(max-width:820px){
+ body{grid-template-columns:1fr;grid-template-rows:auto 1fr 80px}
+ aside{order:2;max-height:none}main{order:1}footer{grid-template-columns:1fr auto}.rt{display:none}.prog{display:none}
+ .hero{flex-direction:column;align-items:flex-start}.cover{width:140px;height:140px;font-size:3.5rem}
+ .head,.row{grid-template-columns:30px 1fr 40px}.head .a,.row .a,.head .p,.row .p{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<aside>
+  <h2>Search real songs</h2>
+  <form id="sform"><input id="q" type="search" placeholder="Song or artist" aria-label="Search songs" required><button class="pill" type="submit">Search</button></form>
+  <div id="res" aria-live="polite"></div>
+  <h2 style="margin-top:26px">Or add manually</h2>
+  <form id="add">
+    <input id="t" placeholder="Song title" aria-label="Song title" required>
+    <input id="a" placeholder="Artist" aria-label="Artist" required>
+    <select id="where" aria-label="Where to add">
+      <option value="tail">Add to end</option><option value="head">Add to start</option><option value="index">Add at position</option>
+    </select>
+    <input id="idx" type="number" min="0" value="1" aria-label="Position (0 is the first song)" hidden>
+    <button class="pill" type="submit">Add song</button>
+  </form>
+  <div class="log" id="info" role="status">Your last list operation and its time complexity show up here.</div>
+</aside>
+
+<main>
+  <section class="hero">
+    <div class="cover" id="cover" role="img" aria-label="Album cover"></div>
+    <div><small>Playlist</small><h1>Linked Playlist</h1><p id="count">0 songs</p></div>
+  </section>
+  <div class="bar">
+    <button class="big" id="play" aria-label="Play">&#9654;</button>
+    <button class="tool" id="reverse">Reverse list</button>
+    <button class="tool" id="repeat" aria-pressed="false">Repeat all: off</button>
+  </div>
+  <div class="list">
+    <div class="head"><span>#</span><span>Title</span><span class="a">Artist</span><span class="p">Node</span><span></span></div>
+    <div id="rows"></div>
+  </div>
+  <section class="under">
+    <h3>Under the hood</h3>
+    <p>Each song is a node holding a pointer to the previous and next song.</p>
+    <div class="rail" id="rail" aria-label="Linked list diagram"></div>
+  </section>
+  <section class="why" aria-labelledby="whyh">
+    <h3 id="whyh">Why this project uses a doubly linked list</h3>
+    <p>A doubly linked list is a chain of nodes. Each song is one node holding its data plus two pointers: <code style="color:var(--green)">prev</code> (the song before it) and <code style="color:var(--green)">next</code> (the song after it). The list also remembers its <code style="color:var(--green)">head</code> (first song) and <code style="color:var(--green)">tail</code> (last song). A playlist keeps changing: songs are added, removed, skipped forward and skipped back. That is exactly what this structure handles well.</p>
+    <div class="why-grid">
+      <div><b>Next song &middot; <em>O(1)</em></b><code>current = current.next</code><br>One pointer hop, no matter how long the playlist is.</div>
+      <div><b>Previous song &middot; <em>O(1)</em></b><code>current = current.prev</code><br>This is why the list is <em>doubly</em> linked. A singly linked list has no back pointer, so going back would mean walking from the head: O(n).</div>
+      <div><b>Add or remove &middot; <em>O(1)</em> at the ends</b>Only a few pointers are re-linked. An array would shift every element to insert at the front: O(n).</div>
+      <div><b>Repeat all</b>At the tail, <code>next</code> is null, so the player jumps to <code>head</code>. At the head, previous jumps to <code>tail</code>. The tail pointer makes both instant.</div>
+      <div><b>Reverse &middot; <em>O(n)</em></b>Swap <code>prev</code> and <code>next</code> in every node, then swap head and tail. No new memory is used.</div>
+      <div><b>The trade-off</b>Jumping to song number 7 is O(n) because you must walk the chain, and each node stores one extra pointer. An array is faster for that, slower for the rest.</div>
+    </div>
+<pre>// add a song at the start (addFirst)
+node.next = head;      // new node points forward to the old first song
+head.prev = node;      // old first song points back to the new node
+head = node;           // the list now starts at the new node</pre>
+    <p class="try">Try it: add a song with "Add to start" and watch the head tag and arrows move in the diagram above.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="np"><div class="mini" id="mini" aria-hidden="true"></div><div style="min-width:0"><b id="title">Nothing playing</b><span id="artist">Add a song to begin</span></div></div>
+  <div class="ctr">
+    <div class="btns">
+      <button class="tool" id="prev" aria-label="Previous song">&#9198;</button>
+      <button class="circ" id="play2" aria-label="Play">&#9654;</button>
+      <button class="tool" id="next" aria-label="Next song">&#9197;</button>
+    </div>
+    <div class="prog"><span id="el">0:00</span><div class="track"><div id="fill"></div></div><span>0:30</span></div>
+  </div>
+  <div class="rt" id="size"></div>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+let playing = false, secs = 0, timer = null, lastId = null, data = null, found = [];
+const audio = new Audio();
+
+async function call(path, method='GET', body){
+  try{
+    const r = await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    const d = await r.json();
+    if(!r.ok){ info(d.error,true); return; }
+    render(d);
+  }catch(e){ info('Cannot reach the server. Check that it is running.',true); }
+}
+function info(msg,err){ const i=$('info'); i.className='log'+(err?' err':''); i.innerHTML=msg; }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+const curOf = () => data && data.songs.find(s=>s.id===data.currentId);
+function setPlaying(p){
+  const c = curOf();
+  playing = p && !!c;
+  ['play','play2'].forEach(id=>{ $(id).innerHTML = playing ? '&#10074;&#10074;' : '&#9654;'; $(id).setAttribute('aria-label', playing?'Pause':'Play'); });
+  clearInterval(timer);
+  if(c && c.previewUrl){
+    if(playing) audio.play().catch(()=>{ setPlaying(false); info('The browser blocked playback. Press play again.',true); });
+    else audio.pause();
+  } else if(playing){
+    timer = setInterval(()=>{ secs++; paint(); if(secs>=30) advance(); },1000);
+  }
+}
+function paint(){
+  $('fill').style.width = (secs/30*100)+'%';
+  $('el').textContent = '0:'+String(Math.min(secs,30)).padStart(2,'0');
+}
+async function advance(){
+  const before = data.currentId;
+  await call('next','POST');
+  if(data.currentId===before){ setPlaying(false); secs=0; audio.currentTime=0; paint(); }
+}
+audio.addEventListener('timeupdate',()=>{
+  secs = Math.floor(audio.currentTime);
+  $('fill').style.width = (audio.currentTime/(audio.duration||30)*100)+'%';
+  $('el').textContent = '0:'+String(secs).padStart(2,'0');
+});
+audio.addEventListener('ended',advance);
+
+function render(d){
+  data = d;
+  const cur = d.songs.find(s=>s.id===d.currentId);
+  if(d.currentId!==lastId){
+    secs=0; paint(); lastId=d.currentId;
+    audio.pause(); audio.src = (cur&&cur.previewUrl)||'';
+    if(playing) setPlaying(true);
+  }
+  const bg = cur&&cur.artwork ? `url('${cur.artwork}') center/cover` : "url('cover.jpg') center/cover,linear-gradient(135deg,#450af5,#c4efd9)";
+  $('mini').style.background = bg; $('cover').style.background = bg;
+  $('title').textContent = cur ? cur.title : 'Nothing playing';
+  $('artist').textContent = cur ? cur.artist : 'Add a song to begin';
+  $('count').textContent = d.size+(d.size===1?' song':' songs');
+  $('size').textContent = 'List size: '+d.size;
+  $('repeat').textContent = 'Repeat all: '+(d.repeat?'on':'off');
+  $('repeat').classList.toggle('on', d.repeat);
+  $('repeat').setAttribute('aria-pressed', d.repeat);
+  if(!cur && playing) setPlaying(false);
+
+  const rows = $('rows'); rows.innerHTML='';
+  if(!d.songs.length) rows.innerHTML='<div class="empty"><b>The playlist is empty</b><br>Use the form to add your first song.</div>';
+  d.songs.forEach((s,i)=>{
+    const last = i===d.songs.length-1;
+    const el = document.createElement('div');
+    el.className='row'+(s.id===d.currentId?' cur':''); el.dataset.id=s.id; el.tabIndex=0; el.setAttribute('role','button');
+    el.setAttribute('aria-label','Play '+s.title);
+    el.innerHTML = `<span class="n">${s.id===d.currentId&&playing?'&#9835;':i+1}</span>
+      <span class="t">${s.artwork?`<img class="art" src="${esc(s.artwork)}" alt="">`:''}${esc(s.title)}</span><span class="a">${esc(s.artist)}</span>
+      <span class="p">${i===0?'<span class="tagc">head</span>':''}${last?'<span class="tagc tl">tail</span>':''}</span>
+      <button class="x" data-del="${s.id}" aria-label="Remove ${esc(s.title)}">&#10005;</button>`;
+    rows.appendChild(el);
+  });
+
+  const rail = $('rail'); rail.innerHTML='';
+  if(d.songs.length){
+    rail.insertAdjacentHTML('beforeend','<span class="nul">null</span><div class="arrow"><i>&#8592;</i></div>');
+    d.songs.forEach((s,i)=>{
+      const cell=document.createElement('div'); cell.className='cell';
+      cell.innerHTML=`<div class="node ${s.id===d.currentId?'cur':''}">${i===0?'<em>head</em>':''}${i===d.songs.length-1?'<em> tail</em>':''}<b>${esc(s.title)}</b><small>${esc(s.artist)}</small></div>
+        <div class="arrow"><i>&#8594;</i><i>&#8592;</i></div>`;
+      rail.appendChild(cell);
+    });
+    rail.insertAdjacentHTML('beforeend','<span class="nul">null</span>');
+  }
+  if(d.op && d.op!=='load') info(`<b>${d.op}</b> ran in <b>${d.complexity}</b>.`);
+}
+
+async function pick(e){
+  const del=e.target.closest('[data-del]'); if(del){ call('songs/'+del.dataset.del,'DELETE'); return; }
+  const r=e.target.closest('.row'); if(r){ await call('select/'+r.dataset.id,'POST'); setPlaying(true); }
+}
+$('rows').addEventListener('click',pick);
+$('rows').addEventListener('keydown',e=>{ if(e.key==='Enter') pick(e); });
+const toggle=()=>setPlaying(!playing);
+$('play').onclick=toggle; $('play2').onclick=toggle;
+$('prev').onclick=()=>call('prev','POST');
+$('next').onclick=()=>call('next','POST');
+$('reverse').onclick=()=>call('reverse','POST');
+$('repeat').onclick=()=>call('repeat','POST');
+$('where').onchange=()=>{ $('idx').hidden = $('where').value!=='index'; };
+$('add').onsubmit=e=>{
+  e.preventDefault();
+  call('songs','POST',{title:$('t').value,artist:$('a').value,where:$('where').value,index:$('idx').value});
+  $('t').value=''; $('a').value=''; $('t').focus();
+};
+$('sform').onsubmit = async e=>{
+  e.preventDefault();
+  const q=$('q').value.trim(); if(!q) return;
+  $('res').innerHTML='<div class="empty">Searching...</div>';
+  try{
+    const r=await fetch('/api/search?q='+encodeURIComponent(q)); const d=await r.json();
+    if(!r.ok) throw new Error(d.error);
+    found=d.results;
+    $('res').innerHTML = found.length ? '' : '<div class="empty">No songs found. Try another title or artist.</div>';
+    found.forEach((s,i)=>{
+      const el=document.createElement('div'); el.className='res';
+      el.innerHTML=`<img src="${esc(s.artwork)}" alt=""><div style="min-width:0"><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><button data-i="${i}" aria-label="Add ${esc(s.title)}">Add</button>`;
+      $('res').appendChild(el);
+    });
+  }catch(err){ $('res').innerHTML='<div class="empty" style="color:var(--warn)">'+esc(err.message||'Search failed.')+'</div>'; }
+};
+$('res').onclick=e=>{
+  const b=e.target.closest('[data-i]'); if(!b) return;
+  const s=found[b.dataset.i];
+  call('songs','POST',{title:s.title,artist:s.artist,previewUrl:s.previewUrl,artwork:s.artwork,where:'tail'});
+};
+call('playlist');
+</script>
+</body>
+</html>
